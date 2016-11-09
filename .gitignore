@@ -1,0 +1,6 @@
+# make/build files
+*.o
+
+# backup files
+*.swp
+.~
