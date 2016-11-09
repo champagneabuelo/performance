@@ -26,7 +26,6 @@ team_t team = {
 /******************************************************
  * Your different versions of the rotate kernel go here
  ******************************************************/
-
 /* 
  * naive_rotate - The naive baseline version of rotate 
  */
@@ -43,10 +42,33 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
 /* 
  * rotate - Another version of rotate
  */
+
+/* #define iblock 32 */
+#define blocksize 32
 char rotate_descr[] = "rotate: Current working version";
 void rotate(int dim, pixel *src, pixel *dst) 
 {
-    naive_rotate(dim, src, dst);
+/* approach for transposing (from class notes)
+ * > for each block: Bi, Bj
+ *	> for each cell in block: i, j
+ * 		> do stuff
+ * 		b[j, i] = a[i, j]
+ *
+ */
+	/* loop variables*/
+	int i, j, Bi, Bj;
+	int k = dim - 1;
+	
+	for (Bi = 0; Bi < dim; Bi += blocksize) {
+		for (Bj = 0; Bj < dim; Bj += blocksize) {
+			for (i = 0; i < blocksize; i++) {
+				for (j = 0; j < blocksize; j++) {
+					dst[RIDX(k - Bi - i, Bj + j, dim)] = src[RIDX(Bj + j, Bi + i, dim)];
+				}
+			}
+		}
+	}
+
 }
 
 /*********************************************************************
