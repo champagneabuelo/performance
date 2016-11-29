@@ -183,7 +183,33 @@ void naive_smooth(int dim, pixel *src, pixel *dst)
 char smooth_descr[] = "smooth: Current working version";
 void smooth(int dim, pixel *src, pixel *dst) 
 {
-    naive_smooth(dim, src, dst);
+	int i, j;
+	for (i = 0; i < dim; i++) 
+	{
+		for (j = 0; j < dim; j++) 
+		{
+			int ii, jj;
+			ii_max = max(i-1, 0);	
+			ii_min = min(i+1, dim-1);
+			jj_max = max(j-1, 0);	
+			jj_min = min(j+1, dim-1);
+			pixel_sum psum;
+			pixel curr_pixel;
+			psum.red = psum.blue = psum.greem = psum.num = 0;
+			for (ii = ii_max; ii <= ii_min; ii++)
+			{
+				for (jj = jj_max; jj <= jj_min; jj++) 
+				{
+					pixel p = src[RIDX(ii, jj, dim)];
+					psum.red += (int) p.red;
+					psum.blue += (int) p.blue;
+					psum.green += (int) p.green;
+					psum.num++;
+				}
+			}
+
+		}
+	}
 }
 
 
