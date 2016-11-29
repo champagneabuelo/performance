@@ -206,8 +206,11 @@ void smooth(int dim, pixel *src, pixel *dst)
 					psum.green += (int) p.green;
 					psum.num++;
 				}
+				curr_pixel.red = (int) (psum.red/psum.num);
+				curr_pixel.blue = (int) (psum.blue/psum.num);
+				curr_pixel.green = (int) (psum.green/psum.num);
+				dst[RIDX(i,j,dim)] = curr_pixel;
 			}
-
 		}
 	}
 }
