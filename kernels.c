@@ -160,6 +160,34 @@ static pixel avg(int dim, int i, int j, pixel *src)
     return current_pixel;
 }
 
+static pixel avg_1 (int dim, int i, int j, pixel *src) 
+{
+	int ii, jj, ii_max, ii_min, jj_max, jj_min;
+	ii_max = max(i-1, 0);	
+	ii_min = min(i+1, dim-1);
+	jj_max = max(j-1, 0);	
+	jj_min = min(j+1, dim-1);
+	pixel_sum psum;
+	pixel curr_pixel;
+	psum.red = psum.blue = psum.green = psum.num = 0;
+	for (ii = ii_max; ii <= ii_min; ii++)
+	{
+		for (jj = jj_max; jj <= jj_min; jj++) 
+		{
+			pixel p = src[RIDX(ii, jj, dim)];
+			psum.red += (int) p.red;
+			psum.green += (int) p.green;
+			psum.blue += (int) p.blue;
+			psum.num++;
+
+		}
+	}
+	curr_pixel.red = (unsigned short) (psum.red/psum.num);
+	curr_pixel.blue = (unsigned short) (psum.blue/psum.num);
+	curr_pixel.green = (unsigned short) (psum.green/psum.num);
+	return curr_pixel;
+}
+
 /******************************************************
  * Your different versions of the smooth kernel go here
  ******************************************************/
@@ -180,7 +208,7 @@ void naive_smooth(int dim, pixel *src, pixel *dst)
 /*
  * smooth - Another version of smooth. 
  */
-char smooth_descr[] = "smooth: Current working version";
+char smooth_descr[] = "smooth: first working version";
 void smooth(int dim, pixel *src, pixel *dst) 
 {
 	int i, j;
@@ -208,10 +236,52 @@ void smooth(int dim, pixel *src, pixel *dst)
  
 				}
 			}
-			curr_pixel.red = (int) (psum.red/psum.num);
-			curr_pixel.blue = (int) (psum.blue/psum.num);
-			curr_pixel.green = (int) (psum.green/psum.num);
+			curr_pixel.red = (unsigned short) (psum.red/psum.num);
+			curr_pixel.blue = (unsigned short) (psum.blue/psum.num);
+			curr_pixel.green = (unsigned short) (psum.green/psum.num);
 			dst[RIDX(i,j,dim)] = curr_pixel;
+		}
+	}
+}
+
+
+
+char smooth1_descr[] = "smooth1: some more optimizations (blocking, loop unrolling)";
+void smooth1(int dim, pixel *src, pixel *dst) 
+{
+	pixel_sum sum;
+	pixel curr_pixel;
+	int i, j;
+	int k = dim-1;
+	for (i = 0; i < dim; i++) 
+	{
+		dst[RIDX(i, 0, dim)] = avg_1(dim, i, 0, src);
+		dst[RIDX(k, i, dim)] = avg_1(dim, k, i, src);
+		dst[RIDX(k-i, k, dim)] = avg_1(dim, k-i, k, src);
+		dst[RIDX(0, k-i, dim)] = avg_1(dim, 0, k-i, src);
+
+	}
+	
+	for (i = 1; i < k; i++) 
+	{
+		for (j = 1; j < k; j++) 
+		{
+			sum.red = sum.green = sum.blue = sum.num = 0;
+			accumulate_sum(&sum, src[RIDX(i-1, j-1, dim)]);
+			accumulate_sum(&sum, src[RIDX(i-1, j, dim)]);
+			accumulate_sum(&sum, src[RIDX(i-1, j+1, dim)]);
+			accumulate_sum(&sum, src[RIDX(i, j-1, dim)]);
+			accumulate_sum(&sum, src[RIDX(i, j, dim)]);
+			accumulate_sum(&sum, src[RIDX(i, j+1, dim)]);
+			accumulate_sum(&sum, src[RIDX(i+1, j-1, dim)]);
+			accumulate_sum(&sum, src[RIDX(i+1, j, dim)]);
+			accumulate_sum(&sum, src[RIDX(i+1, j+1, dim)]);
+			//assign_sum_to_pixel(dst+RIDX(i,j,dim), sum)
+			curr_pixel.red = (unsigned short) (sum.red/sum.num);
+			curr_pixel.blue = (unsigned short) (sum.blue/sum.num);
+			curr_pixel.green = (unsigned short) (sum.green/sum.num);
+			dst[RIDX(i,j,dim)] = curr_pixel;
+
 		}
 	}
 }
@@ -228,6 +298,7 @@ void smooth(int dim, pixel *src, pixel *dst)
 void register_smooth_functions() {
     add_smooth_function(&smooth, smooth_descr);
     add_smooth_function(&naive_smooth, naive_smooth_descr);
+    add_smooth_function(&smooth1, smooth1_descr);
     /* ... Register additional test functions here */
 }
 
