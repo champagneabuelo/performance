@@ -188,29 +188,30 @@ void smooth(int dim, pixel *src, pixel *dst)
 	{
 		for (j = 0; j < dim; j++) 
 		{
-			int ii, jj;
+			int ii, jj, ii_max, ii_min, jj_max, jj_min;
 			ii_max = max(i-1, 0);	
 			ii_min = min(i+1, dim-1);
 			jj_max = max(j-1, 0);	
 			jj_min = min(j+1, dim-1);
 			pixel_sum psum;
 			pixel curr_pixel;
-			psum.red = psum.blue = psum.greem = psum.num = 0;
+			psum.red = psum.blue = psum.green = psum.num = 0;
 			for (ii = ii_max; ii <= ii_min; ii++)
 			{
 				for (jj = jj_max; jj <= jj_min; jj++) 
 				{
 					pixel p = src[RIDX(ii, jj, dim)];
 					psum.red += (int) p.red;
-					psum.blue += (int) p.blue;
-					psum.green += (int) p.green;
-					psum.num++;
+    					psum.green += (int) p.green;
+    					psum.blue += (int) p.blue;
+    					psum.num++;
+ 
 				}
-				curr_pixel.red = (int) (psum.red/psum.num);
-				curr_pixel.blue = (int) (psum.blue/psum.num);
-				curr_pixel.green = (int) (psum.green/psum.num);
-				dst[RIDX(i,j,dim)] = curr_pixel;
 			}
+			curr_pixel.red = (int) (psum.red/psum.num);
+			curr_pixel.blue = (int) (psum.blue/psum.num);
+			curr_pixel.green = (int) (psum.green/psum.num);
+			dst[RIDX(i,j,dim)] = curr_pixel;
 		}
 	}
 }
